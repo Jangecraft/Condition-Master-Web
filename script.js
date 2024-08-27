@@ -1,6 +1,5 @@
 import { getRandomInt, getRandomFloat } from "./random.js";
 
-
 document.addEventListener("DOMContentLoaded", function () {
   const answerZone = document.getElementById("answer-zone");
   const resetBtn = document.getElementById("reset-btn");
@@ -17,7 +16,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let correctAnswers = 0;
   let incorrectAnswers = 0;
 
-  let buttonCount;
+  // จำนวนปุ่มทั้งหมดในเว็บ
+  let buttonCount = 0;
 
   generateButtons();
 
@@ -35,10 +35,16 @@ document.addEventListener("DOMContentLoaded", function () {
     updateScore();
   }
 
+  function checkAnswer(name) {
+    console.log(name);
+  }
+
   function generateButtons() {
     const mode = modeSelect.value;
     answerZone.innerHTML = ""; // ล้างปุ่มเก่า
 
+    // reset ค่าปุ่มเดิม
+    buttonCount = 0;
     if (mode === "basic") {
       buttonCount = 2;
     } else if (mode === "intermediate") {
@@ -63,6 +69,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // เพิ่ม div .col เข้าไปใน answerZone
       answerZone.appendChild(colDiv);
+
+      // ผูก Event Listener กับปุ่มหลังจากที่ปุ่มถูกสร้างแล้ว
+      button.addEventListener("click", () => {
+        if (totalQuestions > 0) {
+          checkAnswer(`btn${i}`);
+          // สุ่มคำถามขึ้นมา
+          generateQuestion();
+        }
+      });
     }
   }
 
@@ -75,15 +90,15 @@ document.addEventListener("DOMContentLoaded", function () {
     let question;
 
     if (mode === "basic") {
-        question = `if (???) {\n    // box 1\n}\nelse {\n    // box 2\n}`;
+      question = `if (???) {\n    // box 1\n}\nelse {\n    // box 2\n}`;
     } else if (mode === "intermediate") {
-        question = `if (???) {\n    // box 1\n}\nelse if (???) {\n    // box 2\n}\nelse {\n    // box 3\n}`;
+      question = `if (???) {\n    // box 1\n}\nelse if (???) {\n    // box 2\n}\nelse {\n    // box 3\n}`;
     } else if (mode === "advanced") {
-        question = `if (???) {\n    // box 1\n}`;
-        for (let i = 2; i < buttonCount; i++) {
-            question += `\nelse if (???) {\n    // box ${i}\n}`;
-        }
-        question += `\nelse {\n    // box ${buttonCount}\n}`;
+      question = `if (???) {\n    // box 1\n}`;
+      for (let i = 2; i < buttonCount; i++) {
+        question += `\nelse if (???) {\n    // box ${i}\n}`;
+      }
+      question += `\nelse {\n    // box ${buttonCount}\n}`;
     }
 
     resultDiv.innerHTML = `<pre><code>${question}</code></pre>`;
