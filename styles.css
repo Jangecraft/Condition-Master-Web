@@ -1,0 +1,75 @@
+body {
+    background-color: #f0f2f5;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.alert {
+    text-align: center;
+}
+
+#game-title {
+    font-size: 2.5rem;
+    color: #940e0e;
+    margin-bottom: 20px;
+    font-weight: bold;
+    text-shadow: 2px 2px #9c9c9c;
+}
+
+#total-questions{
+    font-weight: bold;
+    color:#1e90ff;
+}
+
+#correct-answers{
+    font-weight: bold;
+    color:#3cb371;
+}
+
+#incorrect-answers {
+    font-weight: bold;
+    color:#dc3545;
+}
+
+#result {
+    font-size: 1.25rem;
+    background-color: #f7f7f9;
+    border: 1px solid #e1e1e8;
+    padding: 15px;
+    font-family: "Courier New", Courier, monospace;
+    color: #333;
+    display: flex;
+    justify-content: center;  /* จัดให้อยู่ตรงกลางแนวนอน */
+    align-items: center;      /* จัดให้อยู่ตรงกลางแนวตั้ง */
+    text-align: left;         /* ทำให้ข้อความจัดชิดซ้าย */
+}
+
+#result pre {
+    margin: 0;
+}
+
+#result code {
+    display: block;
+    white-space: pre;         /* รักษาการจัดรูปแบบช่องว่าง */
+    line-height: 1.5;
+}
+
+.counter {
+    font-size: 1.5rem;
+    margin-top: 10px;
+}
+
+.counter span {
+    display: block;
+    font-weight: bold;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 576px) {
+    .counter {
+        font-size: 1.2rem;
+    }
+}
