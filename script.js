@@ -12,11 +12,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // เมื่อหน้าเว็บโหลดขึ้นมา ให้ปุ่ม Reset มีชื่อว่า "Start"
   resetBtn.innerHTML = '<i class="fas fa-random"></i> Start';
+  resetBtn.className = "container-fluid btn btn-primary btn-lg";
 
   let totalQuestions = 0;
   let correctAnswers = 0;
   let incorrectAnswers = 0;
   let skipAnswers = 0;
+
+  // ตรวจสอบว่าเกมหยุดอยู่หรือไม่
+  let stopGame = false;
 
   // เก็บเงื่อนไขทั้งหมดที่จะนำไปใส่ใน if-else
   let choices = [];
@@ -27,9 +31,11 @@ document.addEventListener("DOMContentLoaded", function () {
   generateButtons();
 
   resetBtn.addEventListener("click", () => {
-    // reset คะแนนกลับเป็นค่าเริ่มต้น
-    resetGame();
-    // สุ่มคำถามขึ้นมา
+    if (!stopGame){
+      // reset คะแนนกลับเป็นค่าเริ่มต้น
+      resetGame();
+    }
+    // สุ่มคำถามขึ้นมาใหม่
     generateQuestion();
   });
 
@@ -38,17 +44,25 @@ document.addEventListener("DOMContentLoaded", function () {
     correctAnswers = 0;
     incorrectAnswers = 0;
     skipAnswers = 0;
+    // ปรับการแสดงผลคะแนน
     updateScore();
   }
 
   function checkAnswer(keyClick) {
+    let Answer = false;
+    // ตรวจสอบว่าคำตอบถูกหรือไม่
     if (keyClick == choices[buttonCount]) {
       correctAnswers++;
+      Answer = true;
     } else {
       incorrectAnswers++;
+      Answer = false;
     }
+    const trueBtn = document.getElementById(`box-${choices[buttonCount]}`);
+    trueBtn.className = "container-fluid btn btn-success btn-lg";
 
     updateScore();
+    return Answer
   }
 
   function generateButtons() {
@@ -73,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // สร้างปุ่ม
       const button = document.createElement("button");
       button.id = `box-${i}`;
-      button.className = "container-fluid btn btn-warning btn-lg";
+      button.className = "container-fluid btn btn-dark btn-lg";
       button.textContent = `box ${i}`;
 
       // เพิ่มปุ่มเข้าไปใน div .col
@@ -84,18 +98,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // ผูก Event Listener กับปุ่มหลังจากที่ปุ่มถูกสร้างแล้ว
       button.addEventListener("click", () => {
-        if (totalQuestions > 0) {
-          checkAnswer(i);
-          // สุ่มคำถามขึ้นมา
-          generateQuestion();
+        if (!stopGame){
+          if (totalQuestions > 0) {
+            // สั่งหยุดเกมชั่วคราวเมื่อกดปุ่ม
+            stopGame = true;
+            // เปลี่ยนชื่อปุ่มเป็นปุ่ม Next ชั่วคราว
+            resetBtn.innerHTML = '<i class="fa-solid fa-forward"></i> Next';
+            resetBtn.className = "container-fluid btn btn-warning btn-lg";
+            // ตรวจสอบคำตอบ
+            if (!checkAnswer(i)){
+              button.className = "container-fluid btn btn-danger btn-lg";
+            }
+          }
         }
       });
     }
   }
 
   function generateQuestion() {
+    // สั่งให้เกมดำเนินการต่อเมื่อมีคำถามใหม่
+    stopGame = false;
     // เปลี่ยนชื่อปุ่มคืนเป็น Reset
-    resetBtn.innerHTML = '<i class="fas fa-random"></i> Reset';
+    resetBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Reset';
+    resetBtn.className = "container-fluid btn btn-secondary btn-lg";
 
     generateButtons();
     const mode = modeSelect.value;
@@ -293,13 +318,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function updateProgressBar() {
-    skipAnswers = totalQuestions - (correctAnswers + incorrectAnswers);
+    let withoutAnswers = totalQuestions - (correctAnswers + incorrectAnswers);
+    withoutAnswers = Math.max(withoutAnswers, skipAnswers);
     const correctPercentage =
       totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
     const incorrectPercentage =
       totalQuestions > 0 ? (incorrectAnswers / totalQuestions) * 100 : 0;
     const withoutPercentage =
-      totalQuestions > 0 ? (skipAnswers / totalQuestions) * 100 : 0;
+      totalQuestions > 0 ? (withoutAnswers / totalQuestions) * 100 : 0;
 
     const correctProgressBar = document.getElementById("correct-progress-bar");
     const incorrectProgressBar = document.getElementById(
@@ -320,5 +346,10 @@ document.addEventListener("DOMContentLoaded", function () {
     withoutProgressBar.textContent = Math.round(withoutPercentage) + "%";
   }
 
-  modeSelect.addEventListener("change", generateQuestion);
+  function changeModeSelect() {
+    skipAnswers++;
+    generateQuestion();
+  }
+
+  modeSelect.addEventListener("change", changeModeSelect);
 });
