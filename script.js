@@ -18,6 +18,9 @@ document.addEventListener("DOMContentLoaded", function () {
   let incorrectAnswers = 0;
   let skipAnswers = 0;
 
+  // เก็บเงื่อนไขทั้งหมดที่จะนำไปใส่ใน if-else
+  let choices = [];
+
   // จำนวนปุ่มทั้งหมดในเว็บ
   let buttonCount = 0;
 
@@ -38,8 +41,14 @@ document.addEventListener("DOMContentLoaded", function () {
     updateScore();
   }
 
-  function checkAnswer(name) {
-    console.log(name);
+  function checkAnswer(keyClick) {
+    if (keyClick == choices[buttonCount]) {
+      correctAnswers++;
+    } else {
+      incorrectAnswers++;
+    }
+
+    updateScore();
   }
 
   function generateButtons() {
@@ -76,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // ผูก Event Listener กับปุ่มหลังจากที่ปุ่มถูกสร้างแล้ว
       button.addEventListener("click", () => {
         if (totalQuestions > 0) {
-          checkAnswer(`btn${i}`);
+          checkAnswer(i);
           // สุ่มคำถามขึ้นมา
           generateQuestion();
         }
@@ -93,70 +102,187 @@ document.addEventListener("DOMContentLoaded", function () {
     let question;
 
     if (mode === "basic") {
-      question = `if (???) {\n    // box 1\n}\nelse {\n    // box 2\n}`;
+      generateChoices(buttonCount);
+      question = `if (${choices[0]}) {\n    // box 1\n}\nelse {\n    // box 2\n}`;
     } else if (mode === "intermediate") {
-      question = `if (???) {\n    // box 1\n}\nelse if (???) {\n    // box 2\n}\nelse {\n    // box 3\n}`;
+      generateChoices(buttonCount);
+      question = `if (${choices[0]}) {\n    // box 1\n}\nelse if (${choices[1]}) {\n    // box 2\n}\nelse {\n    // box 3\n}`;
     } else if (mode === "advanced") {
       let i = 0;
       if (getRandomFloat(0, 1, 2) >= 0.7) {
-        question = `if (???) {\n    // box 1\n}`;
+        generateChoices(buttonCount);
+        question = `if (${choices[0]}) {\n    // box 1\n}`;
         for (i = 2; i < buttonCount; i++) {
-          question += `\nelse if (???) {\n    // box ${i}\n}`;
+          question += `\nelse if (${choices[i-1]}) {\n    // box ${i}\n}`;
         }
         question += `\nelse {\n    // box ${buttonCount}\n}`;
       } else {
         if (getRandomFloat(0, 1, 2) >= 0.7 || buttonCount < 4) {
-          question = `if (???) {\n    // box 1`;
-          question += `\n    if (???) {\n        // box ${2}\n    }`;
+          generateChoices(buttonCount);
+          question = `if (${choices[0]}) {\n    // box 1`;
+          question += `\n    if (${choices[1]}) {\n        // box 2\n    }`;
           for (i = 3; i < buttonCount; i++) {
-            question += `\n    else if (???) {\n        // box ${i}\n    }`;
+            question += `\n    else if (${choices[i-1]}) {\n        // box ${i}\n    }`;
           }
           question += `\n}`;
           question += `\nelse {\n    // box ${buttonCount}\n}`;
-        }
-        else {
-          question = `if (???) {\n    // box 1`;
-          question += `\n    if (???) {\n        // box 2\n    }`;
-          for (i = 3; i < buttonCount-1; i++) {
-            question += `\n    else if (???) {\n        // box ${i}\n    }`;
+        } else {
+          generateChoices(buttonCount-1);
+          question = `if (${choices[0]}) {\n    // box 1`;
+          question += `\n    if (${choices[1]}) {\n        // box 2\n    }`;
+          for (i = 3; i < buttonCount - 1; i++) {
+            question += `\n    else if (${choices[i-1]}) {\n        // box ${i}\n    }`;
           }
           question += `\n}`;
-          question += `\nelse {\n    // box ${buttonCount-1}`
-          question += `\n    if (???) {\n        // box ${buttonCount}\n    }`;
+          question += `\nelse {\n    // box ${buttonCount - 1}`;
+          question += `\n    if (${choices[buttonCount-1]}) {\n        // box ${buttonCount}\n    }`;
           question += `\n}`;
         }
       }
     }
 
-    resultDiv.innerHTML = `<pre><code>${colorizeBrackets(question, false)}</code></pre>`;
+    resultDiv.innerHTML = `<pre><code>${colorizeBrackets(question,false)}</code></pre>`;
     totalQuestions++;
     updateScore();
   }
 
-  // ฟังก์ชันใส่สีให้กับวงเล็บและปีกกา
-  function colorizeBrackets(expression, setDefault=true) {
-    let colors;
-    if (setDefault){
-      colors = ["red", "blue", "green", "orange"];
+  // สร้างตัวเลือก
+  function generateChoices(NullKeyBox) {
+    choices = [];
+    let allChoice = buttonCount;
+    let answer = getRandomInt(1, allChoice);
+    for(let i=1; i<=allChoice; i++){
+      if (i == answer){
+        choices.push(generateCondition(true));
+      }
+      else{
+        choices.push(generateCondition(false));
+      }
+      // เปลี่ยนค่าเป็น null ในข้อที่เป็น else
+      if (i == NullKeyBox){
+        choices[i-1] = null;
+      }
     }
-    else {
+    choices.push(answer);
+  }
+
+  // สร้างเงื่อนไข
+  function generateCondition(keyCondition) {
+    let mode = ["basic", "intermediate", "advanced"];
+    mode = mode[Math.floor(Math.random() * mode.length)];
+
+    const basicOperator = [" == ", " != ", " > ", " < ", " >= ", " <= "];
+    const allOperator = [...basicOperator, "!", "&&", "||"];
+
+    let condition;
+    if (mode === "basic") {
+      condition = generateBasic(basicOperator);
+    } else if (mode === "intermediate") {
+      condition = generateIntermediate(basicOperator, allOperator);
+    } else if (mode === "advanced") {
+      let randomChoice = getRandomFloat(0, 1, 2);
+      if (randomChoice <= 0.33) {
+        condition = generateIntermediate(basicOperator, allOperator);
+      } else if (randomChoice <= 0.66) {
+        condition = `!(${generateIntermediate(basicOperator, allOperator)})`;
+      } else {
+        const advancedOperator = ["&&", "||"];
+        const randomQuestion =
+          advancedOperator[
+            Math.floor(Math.random() * advancedOperator.length)
+          ];
+        condition = `(${generateIntermediate(
+          basicOperator,
+          allOperator
+        )}) ${randomQuestion} (${generateBasic(basicOperator)})`;
+      }
+    }
+
+    if (!checkCondition(keyCondition, condition)) {
+      condition = generateCondition(keyCondition);
+    }
+
+    return colorizeBrackets(condition);
+  }
+
+  // สร้างตัวเลขสำหรับเงื่อนไข
+  function generateValue() {
+    let value = getRandomInt(-1000, 1000);
+    if (value < 0) {
+      value = `(${value})`;
+    }
+
+    return value;
+  }
+
+  // สร้างเงื่อนไขขั้น Basic
+  function generateBasic(basicOperator) {
+    let aValue = generateValue();
+    let bValue = generateValue();
+
+    const randomQuestion =
+      basicOperator[Math.floor(Math.random() * basicOperator.length)];
+
+    return `${aValue}${randomQuestion}${bValue}`;
+  }
+
+  // สร้างเงื่อนไขขั้น Intermediate
+  function generateIntermediate(basicOperator, allOperator) {
+    const randomQuestion =
+      allOperator[Math.floor(Math.random() * allOperator.length)];
+
+    let text = "";
+
+    if (randomQuestion === "!") {
+      text = `!(${generateBasic(basicOperator)})`;
+    } else if (randomQuestion === "&&") {
+      text = `(${generateBasic(basicOperator)}) && (${generateBasic(basicOperator)})`;
+    } else if (randomQuestion === "||") {
+      text = `(${generateBasic(basicOperator)}) || (${generateBasic(basicOperator)})`;
+    } else {
+      text = generateBasic(basicOperator);
+    }
+
+    return text;
+  }
+
+  // ตรวจสอบเงื่อนไข
+  function checkCondition(keyCondition, condition) {
+    let evaluatedResult;
+    try {
+      evaluatedResult = eval(condition);
+    } catch (error) {
+      evaluatedResult = false;
+    }
+    
+    return (keyCondition === evaluatedResult);
+  }
+
+  // ฟังก์ชันใส่สีให้กับวงเล็บและปีกกา
+  function colorizeBrackets(expression, setDefault = true) {
+    let colors;
+    if (setDefault) {
+      colors = ["red", "blue", "green", "orange"];
+    } else {
       colors = ["orange", "green", "red", "blue"];
     }
     let colorIndex = 0;
     let depth = 0;
-  
+
     return expression.replace(/[(){}]/g, (bracket) => {
       if (bracket === "(" || bracket === "{") {
         depth++;
         colorIndex = (depth - 1) % colors.length;
         return `<span style="color: ${colors[colorIndex]}">${bracket}</span>`;
       } else if (bracket === ")" || bracket === "}") {
-        const coloredBracket = `<span style="color: ${colors[(depth - 1) % colors.length]}">${bracket}</span>`;
+        const coloredBracket = `<span style="color: ${
+          colors[(depth - 1) % colors.length]
+        }">${bracket}</span>`;
         depth--;
         return coloredBracket;
       }
     });
-  }  
+  }
 
   function updateScore() {
     totalQuestionsEl.textContent = `Total: ${totalQuestions}`;
@@ -167,13 +293,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function updateProgressBar() {
-    skipAnswers = totalQuestions - (correctAnswers+incorrectAnswers)
+    skipAnswers = totalQuestions - (correctAnswers + incorrectAnswers);
     const correctPercentage =
       totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
     const incorrectPercentage =
       totalQuestions > 0 ? (incorrectAnswers / totalQuestions) * 100 : 0;
     const withoutPercentage =
-        totalQuestions > 0 ? (skipAnswers / totalQuestions) * 100 : 0;
+      totalQuestions > 0 ? (skipAnswers / totalQuestions) * 100 : 0;
 
     const correctProgressBar = document.getElementById("correct-progress-bar");
     const incorrectProgressBar = document.getElementById(
