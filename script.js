@@ -144,7 +144,12 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         if (getRandomFloat(0, 1, 2) >= 0.7 || buttonCount < 4) {
           generateChoices(buttonCount);
-          question = `if (${choices[0]}) {\n    // box 1`;
+          if (choices[buttonCount] >= 2 && choices[buttonCount] <= buttonCount-1){
+            question = `if (${generateCondition(true)}) {\n    // box 1`;
+          }
+          else{
+            question = `if (${choices[0]}) {\n    // box 1`;
+          }
           question += `\n    if (${choices[1]}) {\n        // box 2\n    }`;
           for (i = 3; i < buttonCount; i++) {
             question += `\n    else if (${choices[i-1]}) {\n        // box ${i}\n    }`;
@@ -153,7 +158,12 @@ document.addEventListener("DOMContentLoaded", function () {
           question += `\nelse {\n    // box ${buttonCount}\n}`;
         } else {
           generateChoices(buttonCount-1);
-          question = `if (${choices[0]}) {\n    // box 1`;
+          if (choices[buttonCount] >= 2 && choices[buttonCount] <= buttonCount-2){
+            question = `if (${generateCondition(true)}) {\n    // box 1`;
+          }
+          else{
+            question = `if (${choices[0]}) {\n    // box 1`;
+          }
           question += `\n    if (${choices[1]}) {\n        // box 2\n    }`;
           for (i = 3; i < buttonCount - 1; i++) {
             question += `\n    else if (${choices[i-1]}) {\n        // box ${i}\n    }`;
