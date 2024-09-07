@@ -357,7 +357,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function changeModeSelect() {
-    skipAnswers++;
+    resetGame();
     generateQuestion();
   }
 
