@@ -328,20 +328,16 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function updateProgressBar() {
-    let withoutAnswers = totalQuestions - (correctAnswers + incorrectAnswers);
-    withoutAnswers = Math.max(withoutAnswers, skipAnswers);
+    let total_questions = correctAnswers + incorrectAnswers
     const correctPercentage =
-      totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+      total_questions > 0 ? (correctAnswers / total_questions) * 100 : 0;
     const incorrectPercentage =
-      totalQuestions > 0 ? (incorrectAnswers / totalQuestions) * 100 : 0;
-    const withoutPercentage =
-      totalQuestions > 0 ? (withoutAnswers / totalQuestions) * 100 : 0;
+      total_questions > 0 ? (incorrectAnswers / total_questions) * 100 : 0;
 
     const correctProgressBar = document.getElementById("correct-progress-bar");
     const incorrectProgressBar = document.getElementById(
       "incorrect-progress-bar"
     );
-    const withoutProgressBar = document.getElementById("without-progress-bar");
 
     correctProgressBar.style.width = correctPercentage + "%";
     correctProgressBar.setAttribute("aria-valuenow", correctPercentage);
@@ -350,10 +346,6 @@ document.addEventListener("DOMContentLoaded", function () {
     incorrectProgressBar.style.width = incorrectPercentage + "%";
     incorrectProgressBar.setAttribute("aria-valuenow", incorrectPercentage);
     incorrectProgressBar.textContent = Math.round(incorrectPercentage) + "%";
-
-    withoutProgressBar.style.width = withoutPercentage + "%";
-    withoutProgressBar.setAttribute("aria-valuenow", withoutPercentage);
-    withoutProgressBar.textContent = Math.round(withoutPercentage) + "%";
   }
 
   function changeModeSelect() {
